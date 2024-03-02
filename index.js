@@ -98,6 +98,19 @@ app.post("/signup", (req, res) => {
     });
 });
 
+app.get("/num", (req, res) => {
+    const countQuery = "SELECT COUNT(*) AS count FROM images";
+    mydb.query(countQuery, (err, result) => {
+        if (err) {
+            console.error("Error counting entries:", err);
+            res.status(500).send("Error counting entries");
+        } else {
+            const count = result[0].count;
+            res.send(count.toString());
+        }
+    });
+});
+
 
 app.get("/checkPassword/:username/:password", (req, res) => {
     const username = req.params.username;
