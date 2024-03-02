@@ -107,6 +107,7 @@ app.get("/num", (req, res) => {
         } else {
             const count = result[0].count;
             res.send(count.toString());
+            console.log(count);
         }
     });
 });
