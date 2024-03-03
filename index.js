@@ -18,7 +18,7 @@ import sharp from 'sharp';
 import axios from 'axios';
 import { PassThrough } from 'stream';
 import getStream from 'get-stream';
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -105,20 +105,14 @@ app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
     const saltRounds = 10;
 
-    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    const sql = "INSERT INTO user (name, email, password) VALUES (?, ?, ?)";
+    mydb.query(sql, [name, email, hashedPassword], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).send("Error occurred while signing up");
         } else {
-            const sql = "INSERT INTO user (name, email, password) VALUES (?, ?, ?)";
-            mydb.query(sql, [name, email, hashedPassword], (err, result) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send("Error occurred while signing up");
-                } else {
-                    res.status(200).send("User signed up successfully");
-                }
-            });
+            res.status(200).send("User signed up successfully");
         }
     });
 });
@@ -137,18 +131,12 @@ app.get("/checkPassword/:username/:password", (req, res) => {
         } else {
             if (result.length > 0) {
                 const hashedPassword = result[0].password;
-                bcrypt.compare(password, hashedPassword, (err, isMatch) => {
-                    if (err) {
-                        console.log(err);
-                        res.status(500).send("Error occurred while checking password");
-                    } else {
-                        if (isMatch) {
-                            res.status(200).send("Password is correct");
-                        } else {
-                            res.status(401).send("Invalid username or password");
-                        }
-                    }
-                });
+                const inputHashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+                if (hashedPassword === inputHashedPassword) {
+                    res.status(200).send("Password is correct");
+                } else {
+                    res.status(401).send("Invalid username or password");
+                }
             } else {
                 res.status(401).send("Invalid username or password");
             }
