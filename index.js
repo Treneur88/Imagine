@@ -273,10 +273,9 @@ const createDirectory = (directoryPath) => {
     });
 };
 
-async function addAnimatedBorder(imagePath, color1, color2) {
-    // Load the image
-    const image = await loadImage(imagePath);
-    console.log(imagePath);
+async function addAnimatedBorder(fileBuffer, color1, color2) {
+    // Load the image from buffer
+    const image = await loadImage(fileBuffer);
 
     // Create canvas to draw animated border
     const canvas = createCanvas(image.width, image.height);
