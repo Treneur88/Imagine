@@ -18,7 +18,6 @@ import sharp from 'sharp';
 import axios from 'axios';
 import { PassThrough } from 'stream';
 import getStream from 'get-stream';
-import crypto from 'crypto';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
