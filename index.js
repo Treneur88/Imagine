@@ -20,6 +20,8 @@ import { PassThrough } from 'stream';
 import getStream from 'get-stream';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
+
+import { Readable } from 'stream';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -277,7 +279,12 @@ const createDirectory = (directoryPath) => {
 
 
 
-const streamPipeline = promisify(pipeline);
+
+// ...
+
+const readableStream = new Readable();
+readableStream.push(gifBuffer);
+readableStream.push(null); 
 
 async function addAnimatedBorder(fileBuffer, color1, color2) {
     // Load the image from buffer
@@ -354,13 +361,17 @@ app.post("/animated", upload.single('file'), async (req, res) => {
         try {
             // Add animated border and create GIF
             const gifBuffer = await addAnimatedBorder(fileBuffer, color1, color2);
-
+        
+            // Create a readable stream from the GIF buffer
+            const readableStream = new Readable();
+            readableStream.push(gifBuffer);
+            readableStream.push(null); // Indicates the end of stream
+        
             // Upload the GIF to B2 bucket
             const bucketName = 'PictoTest';
             const gifFileName = `${fileName}.gif`;
-            const readableStream = gifBuffer.createReadStream();
             await streamPipeline(readableStream, uploadToB2Bucket(bucketName, gifFileName));
-
+        
             res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
         } catch (error) {
             console.error('Error processing file:', error);
