@@ -52,6 +52,21 @@ app.get('/images/:imageName', async (req, res) => {
 });
 
 // Other API routes and middleware should go here
+app.get("/num", (req, res) => {
+    const countQuery = "SELECT COUNT(*) AS count FROM images";
+    
+    mydb.query(countQuery, (err, result) => {
+        console.log(result)
+        if (err) {
+            console.error("Error counting entries:", err);
+            res.status(500).send("Error counting entries");
+        } else {
+            const count = result[0].count;
+            res.send(count.toString());
+            console.log(count);
+        }
+    });
+});
 
 // Always serve the same HTML file for all routes in the React app
 app.get('*', (req, res) => {
@@ -108,19 +123,7 @@ app.post("/signup", (req, res) => {
     });
 });
 
-app.get("/num", (req, res) => {
-    const countQuery = "SELECT COUNT(*) AS count FROM images";
-    mydb.query(countQuery, (err, result) => {
-        if (err) {
-            console.error("Error counting entries:", err);
-            res.status(500).send("Error counting entries");
-        } else {
-            const count = result[0].count;
-            res.send(count.toString());
-            console.log(count);
-        }
-    });
-});
+
 
 
 app.get("/checkPassword/:username/:password", (req, res) => {
