@@ -50,6 +50,19 @@ app.get('/images/:imageName', async (req, res) => {
     }
 });
 
+app.get("/getNames", (req, res) => {
+    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` ORDER BY date DESC`;
+    mydb.query(getNamesQuery, (err, result) => {
+        if (err) {
+            console.error('Error retrieving names from images:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
+            console.log('Query result:', names);
+            res.json(names);
+        }
+    });
+});
 // Other API routes and middleware should go here
 app.get("/num", (req, res) => {
     const countQuery = "SELECT COUNT(*) AS count FROM images";
@@ -430,19 +443,7 @@ app.post("/pub-name", (req, res) => {
 });
 
 
-app.get("/getNames", (req, res) => {
-    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` ORDER BY date DESC`;
-    mydb.query(getNamesQuery, (err, result) => {
-        if (err) {
-            console.error('Error retrieving names from images:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
-            console.log('Query result:', names);
-            res.json(names);
-        }
-    });
-});
+
 
 const createImagesTableQuery = `CREATE TABLE IF NOT EXISTS images (
     id INT AUTO_INCREMENT PRIMARY KEY,
