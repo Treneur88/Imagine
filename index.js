@@ -364,7 +364,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
             const imageFileName = `${fileName}.png`;
 
             // Upload the image file to B2 bucket
-            await uploadToB2Bucket(imageBuffer, bucketName, imageFileName);
+            await uploadToB2Bucket(imageBuffer, bucketName, gifFileName);
 
             res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
         } catch (error) {
