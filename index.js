@@ -364,6 +364,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
             readableStream.push(null); // Indicates the end of stream
         
             // Upload the GIF to B2 bucket
+            const streamPipeline = promisify(pipeline);
             const bucketName = 'PictoTest';
             const gifFileName = `${fileName}.gif`;
             await streamPipeline(readableStream, uploadToB2Bucket(bucketName, gifFileName));
