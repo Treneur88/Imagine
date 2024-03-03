@@ -280,11 +280,7 @@ const createDirectory = (directoryPath) => {
 
 
 
-// ...
-
-const readableStream = new Readable();
-readableStream.push(gifBuffer);
-readableStream.push(null); 
+//
 
 async function addAnimatedBorder(fileBuffer, color1, color2) {
     // Load the image from buffer
