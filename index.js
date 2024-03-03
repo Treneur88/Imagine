@@ -20,8 +20,6 @@ import { PassThrough } from 'stream';
 import getStream from 'get-stream';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
-
-import { Readable } from 'stream';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -279,8 +277,7 @@ const createDirectory = (directoryPath) => {
 
 
 
-
-//
+const streamPipeline = promisify(pipeline);
 
 async function addAnimatedBorder(fileBuffer, color1, color2) {
     // Load the image from buffer
@@ -349,7 +346,8 @@ app.post("/animated", upload.single('file'), async (req, res) => {
         });
     } else {
         console.log('file received successfully');
-        const fileBuffer = req.file.buffer;
+        const file = req.file;
+        
         const fileName = req.body.name; // Assuming the file name is sent in the request body
         const color1 = req.body.color1; // Assuming color1 is sent in the request body
         const color2 = req.body.color2; // Assuming color2 is sent in the request body
@@ -357,18 +355,17 @@ app.post("/animated", upload.single('file'), async (req, res) => {
         try {
             // Add animated border and create GIF
             const gifBuffer = await addAnimatedBorder(fileBuffer, color1, color2);
-        
-            // Create a readable stream from the GIF buffer
-            const readableStream = new Readable();
-            readableStream.push(gifBuffer);
-            readableStream.push(null); // Indicates the end of stream
-        
+
             // Upload the GIF to B2 bucket
-            const streamPipeline = promisify(pipeline);
             const bucketName = 'PictoTest';
             const gifFileName = `${fileName}.gif`;
-            await streamPipeline(readableStream, uploadToB2Bucket(bucketName, gifFileName));
-        
+            // Convert GIF buffer to image file
+            const imageBuffer = await sharp(gifBuffer).toBuffer();
+            const imageFileName = `${fileName}.png`;
+
+            // Upload the image file to B2 bucket
+            await uploadToB2Bucket(imageBuffer, bucketName, imageFileName);
+
             res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
         } catch (error) {
             console.error('Error processing file:', error);
