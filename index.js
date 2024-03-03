@@ -370,7 +370,12 @@ app.post("/private", (req, res) => {
     const { name } = req.body;
     const updatePubQuery = `UPDATE images SET pub = 0 WHERE name = '${name}'`;
     mydb.query(updatePubQuery, (err, result) => {
-        if (err) {…}
+        if (err) {
+            console.error('Error updating pub in images:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            res.json({ success: true });
+        }
     });
 });
 
