@@ -366,6 +366,13 @@ app.post("/animated", upload.single('file'), async (req, res) => {
     }
 });
 
+app.post("/private", (req, res) => {
+    const { name } = req.body;
+    const updatePubQuery = `UPDATE images SET pub = 0 WHERE name = '${name}'`;
+    mydb.query(updatePubQuery, (err, result) => {
+        if (err) {…}
+    });
+});
 
 
 app.post("/checkName", (req, res) => {
