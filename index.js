@@ -18,6 +18,7 @@ import sharp from 'sharp';
 import axios from 'axios';
 import { PassThrough } from 'stream';
 import getStream from 'get-stream';
+const bcrypt = require('bcrypt');
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -87,13 +88,22 @@ mydb.query(createTableQuery, (err, result) => {
 
 app.post("/signup", (req, res) => {
     const { name, email, password } = req.body;
-    const sql = "INSERT INTO user (name, email, password) VALUES (?, ?, ?)";
-    mydb.query(sql, [name, email, password], (err, result) => {
+    const saltRounds = 10;
+
+    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
         if (err) {
             console.log(err);
             res.status(500).send("Error occurred while signing up");
         } else {
-            res.status(200).send("User signed up successfully");
+            const sql = "INSERT INTO user (name, email, password) VALUES (?, ?, ?)";
+            mydb.query(sql, [name, email, hashedPassword], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send("Error occurred while signing up");
+                } else {
+                    res.status(200).send("User signed up successfully");
+                }
+            });
         }
     });
 });
@@ -116,15 +126,26 @@ app.get("/num", (req, res) => {
 app.get("/checkPassword/:username/:password", (req, res) => {
     const username = req.params.username;
     const password = req.params.password;
-    const sql = "SELECT * FROM user WHERE name = ? AND password = ?";
-    mydb.query(sql, [username, password], (err, result) => {
+    const sql = "SELECT * FROM user WHERE name = ?";
+    mydb.query(sql, username, (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).send("Error occurred while checking password");
         } else {
             if (result.length > 0) {
-                res.status(200).send("Password is correct");
-
+                const hashedPassword = result[0].password;
+                bcrypt.compare(password, hashedPassword, (err, isMatch) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).send("Error occurred while checking password");
+                    } else {
+                        if (isMatch) {
+                            res.status(200).send("Password is correct");
+                        } else {
+                            res.status(401).send("Invalid username or password");
+                        }
+                    }
+                });
             } else {
                 res.status(401).send("Invalid username or password");
             }
