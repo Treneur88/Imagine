@@ -347,7 +347,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
     } else {
         console.log('file received successfully');
         const file = req.file;
-        
+        const fileBuffer = file.buffer;
         const fileName = req.body.name; // Assuming the file name is sent in the request body
         const color1 = req.body.color1; // Assuming color1 is sent in the request body
         const color2 = req.body.color2; // Assuming color2 is sent in the request body
