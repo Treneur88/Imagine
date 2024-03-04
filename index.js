@@ -387,6 +387,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
 
 app.post("/private", (req, res) => {
     const { name } = req.body;
+    console.log(name)
     const updatePubQuery = `UPDATE images SET pub = 0 WHERE name = '${name}'`;
     mydb.query(updatePubQuery, (err, result) => {
         if (err) {
