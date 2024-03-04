@@ -48,7 +48,6 @@ app.get('/images/:imageName', async (req, res) => {
         imageResponse.data.pipe(res);
     } catch (error) {
         console.error('Error fetching image:', error);
-        res.status(500).send('Error fetching image');
     }
 });
 
