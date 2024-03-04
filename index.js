@@ -68,7 +68,7 @@ app.get("/getNamesPub", (req, res) => {
 
 app.post("/getNames", (req, res) => {
     const user = req.query.user;
-    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` WHERE user = '${user}' ORDER BY date DESC`;
+    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` ORDER BY date DESC`;
     mydb.query(getNamesQuery, (err, result) => {
         if (err) {
             console.error('Error retrieving names from images:', err);
