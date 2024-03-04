@@ -67,16 +67,19 @@ app.get("/getNamesPub", (req, res) => {
 });
 
 app.post("/getNames", (req, res) => {
-    const user = req.query.user;
-    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` ORDER BY date DESC`;
+    const getNamesQuery = `SELECT * FROM images`;
     mydb.query(getNamesQuery, (err, result) => {
         if (err) {
-            console.error('Error retrieving names from images:', err);
-            res.status(500).json({ error: 'Internal server error' });
+            console.error('Error fetching names:', err);
+            res.status(500).send('Error fetching names');
         } else {
-            const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
-            console.log('Query result:', names);
-            res.json(names);
+            const resultMap = result.map(row => ({
+                name: row.name,
+                user: row.user,
+                pub: row.pub,
+                date: row.date
+            }));
+            res.send(resultMap);
         }
     });
 });
