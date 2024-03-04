@@ -52,8 +52,23 @@ app.get('/images/:imageName', async (req, res) => {
     }
 });
 
-app.get("/getNames", (req, res) => {
+app.get("/getNamesPub", (req, res) => {
     const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` WHERE pub = 1 ORDER BY date DESC`;
+    mydb.query(getNamesQuery, (err, result) => {
+        if (err) {
+            console.error('Error retrieving names from images:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
+            console.log('Query result:', names);
+            res.json(names);
+        }
+    });
+});
+
+app.post("/getNames", (req, res) => {
+    const user = req.query.user;
+    const getNamesQuery = `SELECT name, user, pub, date FROM \`images\` WHERE user = '${user}' ORDER BY date DESC`;
     mydb.query(getNamesQuery, (err, result) => {
         if (err) {
             console.error('Error retrieving names from images:', err);
