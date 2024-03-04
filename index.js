@@ -294,7 +294,7 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
     encoder.setDelay(100);  // Frame delay in ms
 
     // Draw each frame with an animated gradient border
-    const numFrames = 20; // Adjust the number of frames to control animation speed
+    const numFrames = 12; // Adjust the number of frames to control animation speed
     for (let frame = 0; frame < numFrames; frame++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height);
