@@ -60,13 +60,12 @@ app.get("/getNamesPub", (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
         } else {
             const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
-            console.log('Query result:', names);
             res.json(names);
         }
     });
 });
 
-app.post("/getNames", (req, res) => {
+app.get("/getNames", (req, res) => {
     const getNamesQuery = `SELECT * FROM images`;
     mydb.query(getNamesQuery, (err, result) => {
         if (err) {
