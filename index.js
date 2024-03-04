@@ -47,7 +47,7 @@ app.get('/images/:imageName', async (req, res) => {
         res.set('Content-Type', imageResponse.headers['content-type']);
         imageResponse.data.pipe(res);
     } catch (error) {
-        console.error('Error fetching image:', error);
+        console.log('Error fetching image:');
     }
 });
 
@@ -65,21 +65,18 @@ app.get("/getNamesPub", (req, res) => {
 });
 
 app.get("/getNames", (req, res) => {
-    const getNamesQuery = `SELECT * FROM images`;
-    mydb.query(getNamesQuery, (err, result) => {
+    console.log("my-imgs")
+    var getn = "SELECT name, user, pub, date FROM \`images\` ORDER BY date DESC";
+    mydb.query(getn, (err, result) => {
         if (err) {
-            console.error('Error fetching names:', err);
-            res.status(500).send('Error fetching names');
+            console.error('Error retrieving names from images:', err);
+            res.status(500).json({ error: 'Internal server error' });
         } else {
-            const resultMap = result.map(row => ({
-                name: row.name,
-                user: row.user,
-                pub: row.pub,
-                date: row.date
-            }));
-            res.send(resultMap);
+            const names = result.map(({ name, user, pub, date }) => ({ name, user, pub, date }));
+            res.json(names);
         }
     });
+
 });
 // Other API routes and middleware should go here
 app.get("/num", (req, res) => {
