@@ -388,7 +388,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
 app.post("/private", (req, res) => {
     const { name } = req.body;
     console.log(name)
-    const updatePubQuery = `UPDATE images SET pub = 0 WHERE name = '${name}'`;
+    const updatePubQuery = `UPDATE images SET pub = 2 WHERE name = '${name}'`;
     mydb.query(updatePubQuery, (err, result) => {
         if (err) {
             console.error('Error updating pub in images:', err);
@@ -399,6 +399,19 @@ app.post("/private", (req, res) => {
     });
 });
 
+app.post("/public", (req, res) => {
+    const { name } = req.body;
+    console.log(name)
+    const updatePubQuery = `UPDATE images SET pub = 1 WHERE name = '${name}'`;
+    mydb.query(updatePubQuery, (err, result) => {
+        if (err) {
+            console.error('Error updating pub in images:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            res.json({ success: true });
+        }
+    });
+});
 
 app.post("/checkName", (req, res) => {
     const { name } = req.body;
