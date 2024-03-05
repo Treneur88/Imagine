@@ -301,7 +301,7 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     const image = await loadImage(imagePath);
 
     // Create canvas to draw animated border
-    const borderWidth = 10; // Adjust the border width
+    const borderWidth = 6; // Adjust the border width
     const canvas = createCanvas(image.width + 2 * borderWidth, image.height + 2 * borderWidth);
     const ctx = canvas.getContext('2d');
 
@@ -312,9 +312,10 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     encoder.setDelay(100);  // Frame delay in ms
 
     // Draw each frame with an animated gradient border
-    const numFrames = 20; // Adjust the number of frames to control animation speed
+    const numFrames = 12; // Adjust the number of frames to control animation speed
     for (let frame = 0; frame < numFrames; frame++) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white'; // Replace 'white' with the background color of your image
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, borderWidth, borderWidth, image.width, image.height);
         
         const progress = frame / numFrames;
