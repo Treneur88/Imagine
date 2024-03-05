@@ -341,6 +341,59 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
 
     return gifBuffer;
 }
+
+app.post("/gif-circle", upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        console.log("No file received");
+        return res.send({
+            success: false
+        });
+    } else {
+        console.log('File received successfully');
+        const file = req.file;
+        const fileBuffer = file.buffer;
+        const fileName = req.body.name; // Assuming the file name is sent in the request body
+
+        try {
+            // Load the GIF from buffer
+            const gif = await loadImage(fileBuffer);
+
+            // Create a canvas with the same dimensions as the GIF
+            const canvas = createCanvas(gif.width, gif.height);
+            const ctx = canvas.getContext('2d');
+
+            // Set the canvas background to transparent
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw a circle on the canvas
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            // Draw the GIF on the canvas
+            ctx.drawImage(gif, 0, 0, canvas.width, canvas.height);
+
+            // Convert the canvas to a buffer
+            const circularGifBuffer = canvas.toBuffer();
+
+            // Upload the circular GIF to the B2 bucket
+            await uploadToB2Bucket(circularGifBuffer, 'PictoTest', fileName);
+
+            console.log('Circular GIF created and uploaded successfully');
+
+            return res.send({
+                success: true
+            });
+        } catch (error) {
+            console.error('Error creating circular GIF:', error);
+            return res.send({
+                success: false
+            });
+        }
+    }
+});
+
 app.post("/animated", upload.single('file'), async (req, res) => {
     if (!req.file) {
         console.log("No file received");
