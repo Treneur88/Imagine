@@ -27,10 +27,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const mydb = mysql.createConnection({
-    host: "sql6.freemysqlhosting.net",
-    user: "sql6687227",
-    password: "FxH6W1zje5",
-    database: "sql6687227"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
 });
 
 app.use(cors());
@@ -200,8 +200,8 @@ app.get("/checkUsername/:username", (req, res) => {
 
 const uploadToB2Bucket = async (fileBuffer, bucketName, fileName) => {
     const b2 = new B2({
-        applicationKeyId: '004f75c63a9de360000000005',
-        applicationKey: 'K004s6ZzuDt4tyZ0b1bwL7rMNqT5tv0',
+        applicationKeyId: process.env.APP_KEY_ID,
+        applicationKey: process.env.APP_KEY,
     });
 
     const calculateSha1 = (buffer) => {
