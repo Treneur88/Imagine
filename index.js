@@ -48,7 +48,7 @@ app.get('/images/:imageName', async (req, res) => {
         imageResponse.data.pipe(res);
     } catch (error) {
         console.log('Error fetching image:');
-        window.open("notfound", "_self");
+        window.open("./notfound", "_self");
     }
 });
 
@@ -305,39 +305,34 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
     encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
     encoder.setDelay(100);  // Frame delay in ms
 
-    // Define animation parameters
-    const animationDuration = 3000; // Animation duration in milliseconds
-    const numFrames = 24; // Number of frames per second
-    const gradientWidth = 20; // Width of the gradient border
-
     // Draw each frame with an animated gradient border
+    const numFrames = 12; // Adjust the number of frames to control animation speed
     for (let frame = 0; frame < numFrames; frame++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height);
 
-        // Calculate time position in animation cycle
-        const timePosition = (frame * animationDuration / 1000 / numFrames) % 1;
+        const progress = frame / numFrames;
 
-        // Create linear gradient
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        // Calculate gradient positions based on progress
+        const gradient1Position = progress * (canvas.width + canvas.height) * 2;
+        const gradient2Position = (progress + 0.5) * (canvas.width + canvas.height) * 2;
 
-        // Calculate gradient start and end positions
-        const gradientStartX = -gradientWidth + canvas.width * timePosition;
-        const gradientEndX = canvas.width + gradientWidth * 2 + canvas.width * timePosition;
+        // Create linear gradients
+        const gradient1 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient1.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
+        gradient1.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
 
-        // Add color stops
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(0.5, color2);
-        gradient.addColorStop(1, color1);
+        const gradient2 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient2.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
+        gradient2.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
 
-        // Draw the border with gradient
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, canvas.width, canvas.height);
-        ctx.clip();
-        ctx.fillStyle = gradient;
-        ctx.fillRect(gradientStartX, 0, gradientEndX - gradientStartX, canvas.height);
-        ctx.restore();
+        // Draw the border with two gradients
+        ctx.strokeStyle = gradient1;
+        ctx.lineWidth = 10;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = gradient2;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
         // Get the canvas's content in raw pixel data format and add it as a frame
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -354,7 +349,6 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
 
     return gifBuffer;
 }
-
 
 app.post("/animated", upload.single('file'), async (req, res) => {
     if (!req.file) {
