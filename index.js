@@ -415,6 +415,9 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 
             console.log('GIF cropped into a circle shape.');
 
+            // Upload the cropped GIF buffer to the B2 bucket
+            await uploadToB2Bucket(croppedGifBuffer, 'PictoTest', fileName);
+
             // Return the cropped GIF buffer
             res.send({
                 success: true,
