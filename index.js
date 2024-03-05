@@ -421,7 +421,12 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
                 const radius = Math.min(metadata.width, metadata.height) / 2;
                 const centerX = metadata.width / 2;
                 const centerY = metadata.height / 2;
-                const cropped = await image.extract({ left: centerX - radius, top: centerY - radius, width: radius * 2, height: radius * 2 });
+                const cropped = await image.extract({ 
+                    left: Math.round(centerX - radius), 
+                    top: Math.round(centerY - radius), 
+                    width: Math.round(radius * 2), 
+                    height: Math.round(radius * 2) 
+                });
 
                 // Add the cropped frame to the GIF
                 encoder.addFrame(await cropped.raw().toBuffer());
