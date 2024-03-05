@@ -404,24 +404,27 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
             // Process each frame
             for (let i = 0; i < reader.numFrames(); i++) {
                 const frameInfo = reader.frameInfo(i);
-                const pixels = new Buffer(reader.width * reader.height * 4);
+                const pixels = Buffer.alloc(reader.width * reader.height * 4);
                 reader.decodeAndBlitFrameRGBA(i, pixels);
 
                 // Create a PNG from the frame
-                const image = new png.Image({
-                    width: reader.width,
-                    height: reader.height,
-                    data: pixels
+                const image = await sharp(pixels, {
+                    raw: {
+                        width: reader.width,
+                        height: reader.height,
+                        channels: 4
+                    }
                 });
 
                 // Crop the PNG into a circle
-                const radius = Math.min(image.width, image.height) / 2;
-                const centerX = image.width / 2;
-                const centerY = image.height / 2;
-                const cropped = image.crop(centerX - radius, centerY - radius, radius * 2, radius * 2);
+                const metadata = await image.metadata();
+                const radius = Math.min(metadata.width, metadata.height) / 2;
+                const centerX = metadata.width / 2;
+                const centerY = metadata.height / 2;
+                const cropped = await image.extract({ left: centerX - radius, top: centerY - radius, width: radius * 2, height: radius * 2 });
 
                 // Add the cropped frame to the GIF
-                encoder.addFrame(cropped.data);
+                encoder.addFrame(await cropped.raw().toBuffer());
             }
 
             // Finish encoding
@@ -446,7 +449,6 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
         }
     }
 });
-
 app.post("/private", (req, res) => {
     const { name } = req.body;
     console.log(name)
