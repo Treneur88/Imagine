@@ -391,8 +391,8 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 
         try {
             // Load the GIF
-            const gif = await fs.promises.readFile(fileBuffer);
-            const decoder = new gif.GifReader(gif);
+            // Load the GIF
+            const decoder = new gif.GifReader(fileBuffer);  
 
             // Create a new GIF encoder
             const encoder = new GIFEncoder(decoder.width, decoder.height);
