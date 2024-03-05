@@ -375,6 +375,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
             res.status(500).send('Error processing file');
         }
     }
+});
 app.get("/checki/:name", (req, res) => {
     const { name } = req.params;
     const checkNameQuery = `SELECT * FROM images WHERE name = '${name}'`;
@@ -595,10 +596,10 @@ app.post("/logImage", (req, res) => {
     const logImageQuery = `INSERT INTO images (name, user, pub, date) VALUES ('${name}', '${user}', ${public1}, ${date})`;
     mydb.query(logImageQuery, (err, result) => {
         if (err) {
-        console.error('Error logging image:', err);
-        res.status(500).json({ error: 'Internal server error' });
+            console.error('Error logging image:', err);
+            res.status(500).json({ error: 'Internal server error' });
         } else {
-        res.json({ success: true });
+            res.json({ success: true });
         }
     });
-})
+});
