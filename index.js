@@ -388,7 +388,7 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
         const fileName = req.body.name; // Assuming the file name is sent in the request body
 
         try {
-            // Load the GIF from buffer
+            // Load the GIF
             const gif = await loadImage(fileBuffer);
 
             // Create a canvas with the same dimensions as the GIF
@@ -399,31 +399,30 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw a circle on the canvas
+            const radius = Math.min(canvas.width, canvas.height) / 2;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
             ctx.closePath();
             ctx.clip();
 
-            // Convert the GIF buffer to a supported image format
-            const imageBuffer = await sharp(gifBuffer).toBuffer();
-
-            // Draw the image on the canvas
-            ctx.drawImage(imageBuffer, 0, 0, canvas.width, canvas.height);
+            // Draw the GIF on the canvas
+            ctx.drawImage(gif, 0, 0, gif.width, gif.height);
 
             // Convert the canvas to a buffer
-            const circularGifBuffer = canvas.toBuffer();
+            const croppedGifBuffer = canvas.toBuffer();
 
-            // Upload the circular GIF to the B2 bucket
-            await uploadToB2Bucket(circularGifBuffer, 'PictoTest', fileName);
+            console.log('GIF cropped into a circle shape.');
 
-            console.log('Circular GIF created and uploaded successfully');
-
-            return res.send({
-                success: true
+            // Return the cropped GIF buffer
+            res.send({
+                success: true,
+                gif: croppedGifBuffer
             });
         } catch (error) {
-            console.error('Error creating circular GIF:', error);
-            return res.send({
+            console.error('Error cropping GIF:', error);
+            res.send({
                 success: false
             });
         }
