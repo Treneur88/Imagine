@@ -48,7 +48,6 @@ app.get('/images/:imageName', async (req, res) => {
         imageResponse.data.pipe(res);
     } catch (error) {
         console.log('Error fetching image:');
-        window.open("./notfound", "_self");
     }
 });
 
@@ -223,7 +222,7 @@ const uploadToB2Bucket = async (fileBuffer, bucketName, fileName) => {
         const uploadResponse1 = await axios.post(uploadUrl, fileBuffer, { headers });
 
         console.log('File uploaded successfully');
-        console.log("https://back-1-7wvo.onrender.com/images/" + fileName);
+        console.log("https://back-1-7wvo.onrender.com/uploads//images/" + fileName);
 
         // Get the file ID from the upload response
         const fileId = uploadResponse1.data.fileId;
@@ -306,7 +305,7 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
     encoder.setDelay(100);  // Frame delay in ms
 
     // Draw each frame with an animated gradient border
-    const numFrames = 12; // Adjust the number of frames to control animation speed
+    const numFrames = 4; // Adjust the number of frames to control animation speed
     for (let frame = 0; frame < numFrames; frame++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height);
@@ -314,17 +313,17 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
         const progress = frame / numFrames;
 
         // Calculate gradient positions based on progress
-        const gradient1Position = progress * (canvas.width + canvas.height) * 2;
-        const gradient2Position = (progress + 0.5) * (canvas.width + canvas.height) * 2;
+        const gradient1Position = progress * canvas.width;
+        const gradient2Position = (progress + 0.5) * canvas.width;
 
         // Create linear gradients
-        const gradient1 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient1.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
-        gradient1.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
+        const gradient1 = ctx.createLinearGradient(gradient1Position, 0, gradient2Position, canvas.height);
+        gradient1.addColorStop(0, color1);
+        gradient1.addColorStop(1, color2);
 
-        const gradient2 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient2.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
-        gradient2.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
+        const gradient2 = ctx.createLinearGradient(gradient2Position, 0, gradient1Position, canvas.height);
+        gradient2.addColorStop(0, color2);
+        gradient2.addColorStop(1, color1);
 
         // Draw the border with two gradients
         ctx.strokeStyle = gradient1;
