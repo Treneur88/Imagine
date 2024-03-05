@@ -21,7 +21,7 @@ import getStream from 'get-stream';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import png from 'png-async';
-import gif from 'gif-encoder';
+import gif from 'gifencoder';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
