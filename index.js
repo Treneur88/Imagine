@@ -336,7 +336,7 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     // Finish encoding
     encoder.finish();
 
-    // Collect the GIF into a buffer
+   
     const gifBuffer = Buffer.from(encoder.out.getData());
 
     console.log('Animated border added and GIF created.');
@@ -354,19 +354,19 @@ app.post("/animated", upload.single('file'), async (req, res) => {
         console.log('file received successfully');
         const file = req.file;
         const fileBuffer = file.buffer;
-        const fileName = req.body.name; // Assuming the file name is sent in the request body
-        const color1 = req.body.color1; // Assuming color1 is sent in the request body
-        const color2 = req.body.color2; // Assuming color2 is sent in the request body
+        const fileName = req.body.name; 
+        const color1 = req.body.color1; 
+        const color2 = req.body.color2; 
 
         try {
-            // Add animated border and create GIF
+            
             const gifBuffer = await addAnimatedBorder(fileBuffer, color1, color2);
 
-            // Upload the GIF to B2 bucket
+           
             const bucketName = 'PictoTest';
             const gifFileName = `${fileName}.gif`;
 
-            // Upload the GIF buffer to B2 bucket
+            
             await uploadToB2Bucket(gifBuffer, bucketName, gifFileName);
 
             res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
@@ -404,19 +404,14 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
         console.log('File received successfully');
         const file = req.file;
         const fileBuffer = file.buffer;
-        const fileName = req.body.name; // Assuming the file name is sent in the request body
+        const fileName = req.body.name; 
 
         try {
-            // Load the GIF
             const reader = new omggif.GifReader(fileBuffer);
-
-            // Create a new GIF encoder
             const encoder = new GIFEncoder(reader.width, reader.height);
             encoder.start();
             encoder.setRepeat(0);
-            encoder.setDelay(reader.frameInfo(0).delay * 10); // Get delay from the first frame
-
-            // Create a circular mask
+            encoder.setDelay(reader.frameInfo(0).delay * 10);
             const mask = await sharp({
                 create: {
                     width: reader.width,
@@ -431,13 +426,11 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
                 }])
                 .toBuffer();
 
-            // Process each frame
             for (let i = 0; i < reader.numFrames(); i++) {
                 const frameInfo = reader.frameInfo(i);
                 const pixels = Buffer.alloc(reader.width * reader.height * 4);
                 reader.decodeAndBlitFrameRGBA(i, pixels);
 
-                // Create a PNG from the frame
                 const image = await sharp(pixels, {
                     raw: {
                         width: reader.width,
@@ -446,26 +439,23 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
                     }
                 });
 
-                // Apply the mask to the image
                 const circular = await image.composite([{
                     input: mask,
                     blend: 'dest-in'
                 }]);
 
-                // Add the circular frame to the GIF
                 encoder.addFrame(await circular.raw().toBuffer());
             }
 
-            // Finish encoding
             encoder.finish();
 
-            // Write the GIF to a buffer
+           
             const gifBuffer = encoder.out.getData();
 
-            // Upload the GIF buffer to the B2 bucket
+            
             await uploadToB2Bucket(gifBuffer, 'PictoTest', fileName);
 
-            // Return the circular GIF buffer
+            
             res.send({
                 success: true,
                 gif: gifBuffer
@@ -481,7 +471,7 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 app.post("/private", (req, res) => {
     const { name } = req.body;
     console.log(name)
-    const updatePubQuery = `UPDATE images SET pub = 2 WHERE name = '${name}'`;
+    const updatePubQuery = `UPDATE images SET pub = 0 WHERE name = '${name}'`;
     mydb.query(updatePubQuery, (err, result) => {
         if (err) {
             console.error('Error updating pub in images:', err);
