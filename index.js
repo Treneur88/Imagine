@@ -23,6 +23,9 @@ import { promisify } from 'util';
 import png from 'png-async';
 import gif from 'gif-encoder';
 import omggif from 'omggif';
+import dotenv from 'dotenv';
+
+dotenv.config();
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -336,13 +339,14 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     // Finish encoding
     encoder.finish();
 
-   
+    // Collect the GIF into a buffer
     const gifBuffer = Buffer.from(encoder.out.getData());
 
     console.log('Animated border added and GIF created.');
 
     return gifBuffer;
 }
+
 
 app.post("/animated", upload.single('file'), async (req, res) => {
     if (!req.file) {
