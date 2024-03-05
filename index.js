@@ -48,7 +48,7 @@ app.get('/images/:imageName', async (req, res) => {
         imageResponse.data.pipe(res);
     } catch (error) {
         console.log('Error fetching image:');
-        window.open("/notfound", "_self");
+        window.open("notfound", "_self");
     }
 });
 
