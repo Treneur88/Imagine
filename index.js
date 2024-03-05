@@ -375,6 +375,21 @@ app.post("/animated", upload.single('file'), async (req, res) => {
             res.status(500).send('Error processing file');
         }
     }
+app.get("/checki/:name", (req, res) => {
+    const { name } = req.params;
+    const checkNameQuery = `SELECT * FROM images WHERE name = '${name}'`;
+    mydb.query(checkNameQuery, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send("Error checking name");
+        } else {
+            if (result.length > 0) {
+                res.send({ exists: true });
+            } else {
+                res.send({ exists: false });
+            }
+        }
+    });
 });
 
 
