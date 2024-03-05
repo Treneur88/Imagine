@@ -308,27 +308,36 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
     // Define animation parameters
     const animationDuration = 3000; // Animation duration in milliseconds
     const numFrames = 24; // Number of frames per second
-
-    // Calculate gradient shift per frame
-    const gradientShiftPerFrame = (canvas.width + canvas.height) / (animationDuration / 1000 * numFrames);
+    const gradientWidth = 20; // Width of the gradient border
 
     // Draw each frame with an animated gradient border
     for (let frame = 0; frame < numFrames; frame++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height);
 
-        // Calculate gradient position based on frame number
-        const gradientPosition = (frame * gradientShiftPerFrame) % (canvas.width + canvas.height);
+        // Calculate time position in animation cycle
+        const timePosition = (frame * animationDuration / 1000 / numFrames) % 1;
 
         // Create linear gradient
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(gradientPosition / (canvas.width + canvas.height), color1);
-        gradient.addColorStop((gradientPosition / (canvas.width + canvas.height) + 0.5) % 1, color2); // Use modulus to wrap color stops around
+
+        // Calculate gradient start and end positions
+        const gradientStartX = -gradientWidth + canvas.width * timePosition;
+        const gradientEndX = canvas.width + gradientWidth * 2 + canvas.width * timePosition;
+
+        // Add color stops
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.5, color2);
+        gradient.addColorStop(1, color1);
 
         // Draw the border with gradient
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 10;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.clip();
+        ctx.fillStyle = gradient;
+        ctx.fillRect(gradientStartX, 0, gradientEndX - gradientStartX, canvas.height);
+        ctx.restore();
 
         // Get the canvas's content in raw pixel data format and add it as a frame
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
