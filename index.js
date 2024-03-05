@@ -341,6 +341,39 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     return gifBuffer;
 }
 
+app.post("/animated", upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        console.log("No file received");
+        return res.send({
+            success: false
+        });
+    } else {
+        console.log('file received successfully');
+        const file = req.file;
+        const fileBuffer = file.buffer;
+        const fileName = req.body.name; // Assuming the file name is sent in the request body
+        const color1 = req.body.color1; // Assuming color1 is sent in the request body
+        const color2 = req.body.color2; // Assuming color2 is sent in the request body
+
+        try {
+            // Add animated border and create GIF
+            const gifBuffer = await addAnimatedBorder(fileBuffer, color1, color2);
+
+            // Upload the GIF to B2 bucket
+            const bucketName = 'PictoTest';
+            const gifFileName = `${fileName}.gif`;
+
+            // Upload the GIF buffer to B2 bucket
+            await uploadToB2Bucket(gifBuffer, bucketName, gifFileName);
+
+            res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
+        } catch (error) {
+            console.error('Error processing file:', error);
+            res.status(500).send('Error processing file');
+        }
+    }
+});
+
 
 app.post("/gif-circle", upload.single('file'), async (req, res) => {
     if (!req.file) {
@@ -397,41 +430,6 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
     }
 });
 
-app.post("/animated", upload.single('file'), async (req, res) => {
-    if (!req.file) {
-        console.log("No file received");
-        return res.send({
-            success: false
-        });
-    } else {
-        console.log('file received successfully');
-        const file = req.file;
-        const fileBuffer = file.buffer;
-        const fileName = req.body.name; // Assuming the file name is sent in the request body
-        const color1 = req.body.color1; // Assuming color1 is sent in the request body
-        const color2 = req.body.color2; // Assuming color2 is sent in the request body
-
-        try {
-            // Add animated border and create GIF
-            const gifBuffer = await addAnimatedBorder(fileBuffer, color1, color2);
-
-            // Upload the GIF to B2 bucket
-            const bucketName = 'PictoTest';
-            const gifFileName = `${fileName}.gif`;
-            // Convert GIF buffer to image file
-            const imageBuffer = await sharp(gifBuffer).toBuffer();
-            const imageFileName = `${fileName}.png`;
-
-            // Upload the image file to B2 bucket
-            await uploadToB2Bucket(imageBuffer, bucketName, gifFileName);
-
-            res.status(200).json({ message: 'Animated border added, GIF created and uploaded successfully.' });
-        } catch (error) {
-            console.error('Error processing file:', error);
-            res.status(500).send('Error processing file');
-        }
-    }
-});
 
 app.post("/private", (req, res) => {
     const { name } = req.body;
