@@ -48,6 +48,7 @@ app.get('/images/:imageName', async (req, res) => {
         imageResponse.data.pipe(res);
     } catch (error) {
         console.log('Error fetching image:');
+        window.open("./notfound", "_self");
     }
 });
 
@@ -222,7 +223,7 @@ const uploadToB2Bucket = async (fileBuffer, bucketName, fileName) => {
         const uploadResponse1 = await axios.post(uploadUrl, fileBuffer, { headers });
 
         console.log('File uploaded successfully');
-        console.log("https://back-1-7wvo.onrender.com/uploads//images/" + fileName);
+        console.log("https://back-1-7wvo.onrender.com/images/" + fileName);
 
         // Get the file ID from the upload response
         const fileId = uploadResponse1.data.fileId;
