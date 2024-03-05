@@ -21,7 +21,7 @@ import getStream from 'get-stream';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import png from 'png-async';
-import gif from 'gifencoder';
+import gif from 'gif-encoder';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -392,11 +392,10 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 
         try {
             // Load the GIF
-            // Load the GIF
-            const decoder = new gif.GifReader(fileBuffer);  
+            const decoder = new gif.GifReader(fileBuffer);
 
             // Create a new GIF encoder
-            const encoder = new GIFEncoder(decoder.width, decoder.height);
+            const encoder = new gif.Encoder(decoder.width, decoder.height);
             encoder.start();
             encoder.setRepeat(0);
             encoder.setDelay(decoder.getDelay());
