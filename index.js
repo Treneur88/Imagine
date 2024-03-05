@@ -301,11 +301,12 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     const image = await loadImage(imagePath);
 
     // Create canvas to draw animated border
-    const canvas = createCanvas(image.width, image.height);
+    const borderWidth = 10; // Adjust the border width
+    const canvas = createCanvas(image.width + 2 * borderWidth, image.height + 2 * borderWidth);
     const ctx = canvas.getContext('2d');
 
     // Create GIF encoder
-    const encoder = new GIFEncoder(image.width, image.height);
+    const encoder = new GIFEncoder(canvas.width, canvas.height);
     encoder.start();
     encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
     encoder.setDelay(100);  // Frame delay in ms
@@ -314,7 +315,7 @@ async function addAnimatedBorder(imagePath, color1, color2) {
     const numFrames = 20; // Adjust the number of frames to control animation speed
     for (let frame = 0; frame < numFrames; frame++) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0, image.width, image.height);
+        ctx.drawImage(image, borderWidth, borderWidth, image.width, image.height);
         
         const progress = frame / numFrames;
 
@@ -328,8 +329,8 @@ async function addAnimatedBorder(imagePath, color1, color2) {
         gradient.addColorStop(1, color2);
 
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 10; // Adjust the border width
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = borderWidth;
+        ctx.strokeRect(borderWidth / 2, borderWidth / 2, canvas.width - borderWidth, canvas.height - borderWidth);
 
         // Get the canvas's content in raw pixel data format and add it as a frame
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
