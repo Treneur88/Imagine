@@ -313,25 +313,14 @@ async function addAnimatedBorder(fileBuffer, color1, color2) {
 
         const progress = frame / numFrames;
 
-        // Calculate gradient positions based on progress
-        const gradient1Position = progress * (canvas.width + canvas.height) * 2;
-        const gradient2Position = (progress + 0.5) * (canvas.width + canvas.height) * 2;
+        // Create linear gradient
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(progress, color1);
+        gradient.addColorStop((progress + 0.5) % 1, color2); // Use modulus to wrap color stops around
 
-        // Create linear gradients
-        const gradient1 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient1.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
-        gradient1.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
-
-        const gradient2 = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient2.addColorStop((gradient2Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color2);
-        gradient2.addColorStop((gradient1Position % (canvas.width + canvas.height)) / (canvas.width + canvas.height), color1);
-
-        // Draw the border with two gradients
-        ctx.strokeStyle = gradient1;
+        // Draw the border with gradient
+        ctx.strokeStyle = gradient;
         ctx.lineWidth = 10;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-        ctx.strokeStyle = gradient2;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
         // Get the canvas's content in raw pixel data format and add it as a frame
