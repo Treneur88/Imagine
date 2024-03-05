@@ -394,7 +394,6 @@ app.get("/checki/:name", (req, res) => {
 });
 
 
-
 app.post("/gif-circle", upload.single('file'), async (req, res) => {
     if (!req.file) {
         console.log("No file received");
@@ -417,6 +416,21 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
             encoder.setRepeat(0);
             encoder.setDelay(reader.frameInfo(0).delay * 10); // Get delay from the first frame
 
+            // Create a circular mask
+            const mask = await sharp({
+                create: {
+                    width: reader.width,
+                    height: reader.height,
+                    channels: 4,
+                    background: { r: 0, g: 0, b: 0, alpha: 0 }
+                }
+            })
+                .composite([{
+                    input: Buffer.from(`<svg><circle cx="${reader.width / 2}" cy="${reader.height / 2}" r="${Math.min(reader.width, reader.height) / 2}"/></svg>`),
+                    blend: 'dest-in'
+                }])
+                .toBuffer();
+
             // Process each frame
             for (let i = 0; i < reader.numFrames(); i++) {
                 const frameInfo = reader.frameInfo(i);
@@ -432,20 +446,14 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
                     }
                 });
 
-                // Crop the PNG into a circle
-                const metadata = await image.metadata();
-                const radius = Math.min(metadata.width, metadata.height) / 2;
-                const centerX = metadata.width / 2;
-                const centerY = metadata.height / 2;
-                const cropped = await image.extract({ 
-                    left: Math.round(centerX - radius), 
-                    top: Math.round(centerY - radius), 
-                    width: Math.round(radius * 2), 
-                    height: Math.round(radius * 2) 
-                });
+                // Apply the mask to the image
+                const circular = await image.composite([{
+                    input: mask,
+                    blend: 'dest-in'
+                }]);
 
-                // Add the cropped frame to the GIF
-                encoder.addFrame(await cropped.raw().toBuffer());
+                // Add the circular frame to the GIF
+                encoder.addFrame(await circular.raw().toBuffer());
             }
 
             // Finish encoding
@@ -457,7 +465,7 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
             // Upload the GIF buffer to the B2 bucket
             await uploadToB2Bucket(gifBuffer, 'PictoTest', fileName);
 
-            // Return the cropped GIF buffer
+            // Return the circular GIF buffer
             res.send({
                 success: true,
                 gif: gifBuffer
