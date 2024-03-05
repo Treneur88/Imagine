@@ -371,8 +371,11 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
             ctx.closePath();
             ctx.clip();
 
-            // Draw the GIF on the canvas
-            ctx.drawImage(gif, 0, 0, canvas.width, canvas.height);
+            // Convert the GIF buffer to a supported image format
+            const imageBuffer = await sharp(gifBuffer).toBuffer();
+
+            // Draw the image on the canvas
+            ctx.drawImage(imageBuffer, 0, 0, canvas.width, canvas.height);
 
             // Convert the canvas to a buffer
             const circularGifBuffer = canvas.toBuffer();
