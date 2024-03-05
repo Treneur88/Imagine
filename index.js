@@ -20,6 +20,7 @@ import { PassThrough } from 'stream';
 import getStream from 'get-stream';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
+import png from 'png-async';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -375,6 +376,7 @@ app.post("/animated", upload.single('file'), async (req, res) => {
 });
 
 
+
 app.post("/gif-circle", upload.single('file'), async (req, res) => {
     if (!req.file) {
         console.log("No file received");
@@ -389,39 +391,50 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 
         try {
             // Load the GIF
-            const gif = await loadImage(fileBuffer);
+            const gif = await fs.promises.readFile(fileBuffer);
+            const decoder = new gif.GifReader(gif);
 
-            // Create a canvas with the same dimensions as the GIF
-            const canvas = createCanvas(gif.width, gif.height);
-            const ctx = canvas.getContext('2d');
+            // Create a new GIF encoder
+            const encoder = new GIFEncoder(decoder.width, decoder.height);
+            encoder.start();
+            encoder.setRepeat(0);
+            encoder.setDelay(decoder.getDelay());
 
-            // Set the canvas background to transparent
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Process each frame
+            for (let i = 0; i < decoder.numFrames(); i++) {
+                const frameInfo = decoder.frameInfo(i);
+                const pixels = decoder.decodeAndBlitFrameRGBA(i, new Buffer(decoder.width * decoder.height * 4));
 
-            // Draw a circle on the canvas
-            const radius = Math.min(canvas.width, canvas.height) / 2;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-            ctx.closePath();
-            ctx.clip();
+                // Create a PNG from the frame
+                const image = new png.Image({
+                    width: decoder.width,
+                    height: decoder.height,
+                    data: pixels
+                });
 
-            // Draw the GIF on the canvas
-            ctx.drawImage(gif, 0, 0, gif.width, gif.height);
+                // Crop the PNG into a circle
+                const radius = Math.min(image.width, image.height) / 2;
+                const centerX = image.width / 2;
+                const centerY = image.height / 2;
+                const cropped = image.crop(centerX - radius, centerY - radius, radius * 2, radius * 2);
 
-            // Convert the canvas to a buffer
-            const croppedGifBuffer = canvas.toBuffer();
+                // Add the cropped frame to the GIF
+                encoder.addFrame(cropped.data);
+            }
 
-            console.log('GIF cropped into a circle shape.');
+            // Finish encoding
+            encoder.finish();
 
-            // Upload the cropped GIF buffer to the B2 bucket
-            await uploadToB2Bucket(croppedGifBuffer, 'PictoTest', fileName);
+            // Write the GIF to a buffer
+            const gifBuffer = encoder.out.getData();
+
+            // Upload the GIF buffer to the B2 bucket
+            await uploadToB2Bucket(gifBuffer, 'PictoTest', fileName);
 
             // Return the cropped GIF buffer
             res.send({
                 success: true,
-                gif: croppedGifBuffer
+                gif: gifBuffer
             });
         } catch (error) {
             console.error('Error cropping GIF:', error);
@@ -431,7 +444,6 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
         }
     }
 });
-
 
 app.post("/private", (req, res) => {
     const { name } = req.body;
