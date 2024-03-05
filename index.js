@@ -22,6 +22,7 @@ import { pipeline } from 'stream';
 import { promisify } from 'util';
 import png from 'png-async';
 import gif from 'gif-encoder';
+import omggif from 'omggif';
 const mydb = mysql.createConnection({
     host: "sql6.freemysqlhosting.net",
     user: "sql6687227",
@@ -392,23 +393,24 @@ app.post("/gif-circle", upload.single('file'), async (req, res) => {
 
         try {
             // Load the GIF
-            const decoder = new gif.GifReader(fileBuffer);
+            const reader = new omggif.GifReader(fileBuffer);
 
             // Create a new GIF encoder
-            const encoder = new gif.Encoder(decoder.width, decoder.height);
+            const encoder = new GIFEncoder(reader.width, reader.height);
             encoder.start();
             encoder.setRepeat(0);
-            encoder.setDelay(decoder.getDelay());
+            encoder.setDelay(reader.frameInfo(0).delay * 10); // Get delay from the first frame
 
             // Process each frame
-            for (let i = 0; i < decoder.numFrames(); i++) {
-                const frameInfo = decoder.frameInfo(i);
-                const pixels = decoder.decodeAndBlitFrameRGBA(i, new Buffer(decoder.width * decoder.height * 4));
+            for (let i = 0; i < reader.numFrames(); i++) {
+                const frameInfo = reader.frameInfo(i);
+                const pixels = new Buffer(reader.width * reader.height * 4);
+                reader.decodeAndBlitFrameRGBA(i, pixels);
 
                 // Create a PNG from the frame
                 const image = new png.Image({
-                    width: decoder.width,
-                    height: decoder.height,
+                    width: reader.width,
+                    height: reader.height,
                     data: pixels
                 });
 
